@@ -6,9 +6,12 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-lg border-b border-primary/20">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Logo />
-        <nav className="flex items-center gap-4">
+        <nav className="hidden md:flex items-center gap-4">
           <Button variant="link" asChild className="text-foreground hover:text-primary">
             <a href="/market-analysis">Market Analysis</a>
+          </Button>
+          <Button variant="link" asChild className="text-foreground hover:text-primary">
+            <a href="#pricing">Pricing</a>
           </Button>
           <Button
             asChild
