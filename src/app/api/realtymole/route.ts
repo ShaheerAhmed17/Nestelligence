@@ -5,14 +5,19 @@ import axios from 'axios';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const city = searchParams.get('city') || 'Los Angeles';
+  const city = searchParams.get('city');
+  const state = searchParams.get('state');
+
+  if (!city || !state) {
+    return NextResponse.json({ error: 'City and state parameters are required' }, { status: 400 });
+  }
 
   try {
     const response = await axios.get('https://realty-mole-property-api.p.rapidapi.com/properties', {
       params: {
         city,
-        state: 'CA',
-        limit: 5,
+        state,
+        limit: 50,
       },
       headers: {
         'X-RapidAPI-Key': 'b78e623394f0428cbab530eacf0823fe',
