@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { AlertTriangle } from 'lucide-react';
 
 interface Listing {
   id: string; // Switched from zpid to RealtyMole's id
@@ -20,12 +21,14 @@ export default function ZillowListings() {
   const [location, setLocation] = useState('San Francisco,CA');
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [city, state] = location.split(',');
 
   useEffect(() => {
     const fetchListings = async () => {
       setLoading(true);
+      setError(null);
       try {
         const response = await axios.get('/api/realtymole', { params: { city, state } });
         const mappedListings = (response.data || []).map((p: any) => ({
@@ -40,6 +43,7 @@ export default function ZillowListings() {
         setListings(mappedListings.slice(0, 6));
       } catch (error) {
         console.error("Failed to fetch RealtyMole listings:", error);
+        setError('Failed to load listings. The provider may be temporarily unavailable.');
         setListings([]);
       } finally {
         setLoading(false);
@@ -80,6 +84,11 @@ export default function ZillowListings() {
                   </CardContent>
                 </Card>
               ))
+            ) : error ? (
+                <div className="col-span-full bg-destructive/10 border border-destructive text-destructive rounded-lg p-6 flex items-center justify-center gap-4">
+                    <AlertTriangle className="w-8 h-8" />
+                    <p className="font-medium">{error}</p>
+                </div>
             ) : listings.length > 0 ? listings.map((listing: Listing) => (
               <Link href={`/listings/${listing.id}?city=${encodeURIComponent(city)}&state=${state}`} key={listing.id} className="block h-full">
                 <Card className="bg-card rounded-lg overflow-hidden border border-white/10 hover:shadow-xl hover:border-primary transition-all duration-300 h-full flex flex-col">
