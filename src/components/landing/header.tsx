@@ -14,6 +14,9 @@ export default function Header() {
           <Button variant="link" asChild className="text-foreground hover:text-primary">
             <a href="#pricing">Pricing</a>
           </Button>
+           <Button variant="link" asChild className="text-foreground hover:text-primary">
+            <Link href="/admin">Admin</Link>
+          </Button>
           <Button
             asChild
             className="bg-primary hover:bg-accent text-primary-foreground font-semibold px-6 py-2 rounded-md shadow-md hover:shadow-lg transition"
