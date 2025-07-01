@@ -5,8 +5,8 @@ export function middleware(req: NextRequest) {
 
   if (basicAuth) {
     const authValue = basicAuth.split(' ')[1]
-    // atob is supported in the Edge runtime
-    const [user, pwd] = atob(authValue).split(':')
+    const decodedAuth = Buffer.from(authValue, 'base64').toString('utf-8');
+    const [user, pwd] = decodedAuth.split(':')
 
     const expectedUser = process.env.ADMIN_USERNAME
     const expectedPassword = process.env.ADMIN_PASSWORD
