@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import VisitorTracker from '@/components/VisitorTracker';
+import ChatbotEmbed from '@/components/ChatbotEmbed';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <VisitorTracker />
+        <ChatbotEmbed />
         {children}
         <Toaster />
       </body>
