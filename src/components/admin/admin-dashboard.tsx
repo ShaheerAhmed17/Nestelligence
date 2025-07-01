@@ -22,6 +22,7 @@ import {
 } from 'recharts';
 import { format, parseISO, startOfDay } from 'date-fns';
 import { Loader2, AlertTriangle, Users, SheetIcon, Activity } from 'lucide-react';
+import Link from 'next/link';
 
 interface Lead {
   Timestamp: string;
@@ -31,6 +32,15 @@ interface Lead {
   Location: string;
   Budget: string;
   PropertyType: string;
+}
+
+interface Listing {
+  zpid: string;
+  address: string;
+  price: string;
+  bedrooms: number;
+  bathrooms: number;
+  brokerName?: string;
 }
 
 // Function to process lead data for the chart
@@ -59,8 +69,10 @@ const processLeadDataForChart = (leads: Lead[]) => {
 
 export default function AdminDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [listings, setListings] = useState<Listing[]>([]);
   const [totalVisitors, setTotalVisitors] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [listingsLoading, setListingsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConfigured, setIsConfigured] = useState(true);
 
@@ -69,24 +81,39 @@ export default function AdminDashboard() {
       setLoading(true);
       setError(null);
       try {
-        const [leadsResponse, analyticsResponse] = await Promise.all([
+        const [leadsResponse, analyticsResponse, listingsResponse] = await Promise.allSettled([
           axios.get<{ leads: Lead[], configured: boolean, error?: string }>('/api/get-leads'),
-          axios.get<{ totalVisitors: number, configured: boolean }>('/api/analytics')
+          axios.get<{ totalVisitors: number, configured: boolean }>('/api/analytics'),
+          axios.get('/api/Zillow', { params: { city: 'San Francisco', state: 'CA' } })
         ]);
         
-        const configured = leadsResponse.data.configured && analyticsResponse.data.configured;
-        setIsConfigured(configured);
+        // Handle Leads & Analytics
+        if (leadsResponse.status === 'fulfilled' && analyticsResponse.status === 'fulfilled') {
+            const configured = leadsResponse.value.data.configured && analyticsResponse.value.data.configured;
+            setIsConfigured(configured);
 
-        if (configured) {
-          const cleanedLeads = leadsResponse.data.leads.map(lead => ({
-            ...lead,
-            Phone: lead.Phone ? String(lead.Phone).replace(/^'/, '') : '',
-          }));
-          setLeads(cleanedLeads);
-          setTotalVisitors(analyticsResponse.data.totalVisitors);
+            if (configured) {
+              const cleanedLeads = leadsResponse.value.data.leads.map(lead => ({
+                ...lead,
+                Phone: lead.Phone ? String(lead.Phone).replace(/^'/, '') : '',
+              }));
+              setLeads(cleanedLeads);
+              setTotalVisitors(analyticsResponse.value.data.totalVisitors);
+            } else {
+              setLeads([]);
+              setTotalVisitors(0);
+            }
         } else {
-          setLeads([]);
-          setTotalVisitors(0);
+            setError('Could not load leads or analytics data.');
+        }
+
+
+        // Handle Listings
+        if (listingsResponse.status === 'fulfilled') {
+            setListings(listingsResponse.value.data?.props || []);
+        } else {
+            console.error("Failed to fetch listings for admin dashboard:", listingsResponse.reason);
+            setListings([]);
         }
 
       } catch (err: any) {
@@ -95,6 +122,7 @@ export default function AdminDashboard() {
         console.error(err);
       } finally {
         setLoading(false);
+        setListingsLoading(false);
       }
     };
     fetchDashboardData();
@@ -242,6 +270,58 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+       {/* Property Listings Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Featured Listings</CardTitle>
+          <CardDescription>A selection of current property listings from Zillow (Default: San Francisco, CA).</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Address</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Beds</TableHead>
+                  <TableHead>Baths</TableHead>
+                  <TableHead>Broker (Contact)</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {listingsLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <Loader2 className="h-6 w-6 animate-spin inline-block mr-2" /> Loading listings...
+                    </TableCell>
+                  </TableRow>
+                ) : listings.length > 0 ? (
+                  listings.map((listing) => (
+                     <TableRow key={listing.zpid}>
+                        <TableCell className="font-medium">
+                          <Link href={`/listings/${listing.zpid}`} target="_blank" className="hover:underline text-primary">
+                            {listing.address}
+                          </Link>
+                        </TableCell>
+                        <TableCell>{listing.price}</TableCell>
+                        <TableCell>{listing.bedrooms}</TableCell>
+                        <TableCell>{listing.bathrooms ? Math.round(listing.bathrooms) : 'N/A'}</TableCell>
+                        <TableCell>{listing.brokerName || 'N/A'}</TableCell>
+                      </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      No listings could be loaded.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
 
        {/* Full leads table */}
       <Card>
