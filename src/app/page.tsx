@@ -13,8 +13,8 @@ export default function HomePage() {
       <main className="flex-grow">
         <HeroSection />
         <ServicesSection />
-        <MarketInsightsSection /> {/* ✅ Market insights from Realty Mole */}
-        <BayutListingsSection />   {/* ✅ Live listings from Bayut */}
+        <MarketInsightsSection />
+        <BayutListingsSection />
         <ContactSection />
       </main>
       <Footer />
