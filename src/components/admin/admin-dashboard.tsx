@@ -80,50 +80,61 @@ export default function AdminDashboard() {
     const fetchDashboardData = async () => {
       setLoading(true);
       setError(null);
-      try {
-        const [leadsResponse, analyticsResponse, listingsResponse] = await Promise.allSettled([
-          axios.get<{ leads: Lead[], configured: boolean, error?: string }>('/api/get-leads'),
-          axios.get<{ totalVisitors: number, configured: boolean }>('/api/analytics'),
-          axios.get('/api/Zillow', { params: { city: 'San Francisco', state: 'CA' } })
-        ]);
-        
-        // Handle Leads & Analytics
-        if (leadsResponse.status === 'fulfilled' && analyticsResponse.status === 'fulfilled') {
-            const configured = leadsResponse.value.data.configured && analyticsResponse.value.data.configured;
-            setIsConfigured(configured);
+      
+      const [leadsResponse, analyticsResponse, listingsResponse] = await Promise.allSettled([
+        axios.get<{ leads: Lead[], configured: boolean, error?: string }>('/api/get-leads'),
+        axios.get<{ totalVisitors: number, configured: boolean }>('/api/analytics'),
+        axios.get('/api/Zillow', { params: { city: 'San Francisco', state: 'CA' } })
+      ]);
+      
+      let sheetsConfigured = true;
+      let dataError = false;
 
-            if (configured) {
-              const cleanedLeads = leadsResponse.value.data.leads.map(lead => ({
-                ...lead,
-                Phone: lead.Phone ? String(lead.Phone).replace(/^'/, '') : '',
-              }));
-              setLeads(cleanedLeads);
-              setTotalVisitors(analyticsResponse.value.data.totalVisitors);
-            } else {
-              setLeads([]);
-              setTotalVisitors(0);
-            }
+      // Handle Leads Response
+      if (leadsResponse.status === 'fulfilled') {
+        if (leadsResponse.value.data.configured) {
+          const cleanedLeads = leadsResponse.value.data.leads.map(lead => ({
+            ...lead,
+            Phone: lead.Phone ? String(lead.Phone).replace(/^'/, '') : '',
+          }));
+          setLeads(cleanedLeads);
         } else {
-            setError('Could not load leads or analytics data.');
+          sheetsConfigured = false;
         }
-
-
-        // Handle Listings
-        if (listingsResponse.status === 'fulfilled') {
-            setListings(listingsResponse.value.data?.props || []);
-        } else {
-            console.error("Failed to fetch listings for admin dashboard:", listingsResponse.reason);
-            setListings([]);
-        }
-
-      } catch (err: any) {
-        const errorMessage = err.response?.data?.error || 'An unknown error occurred while fetching dashboard data. Check the server logs.';
-        setError(errorMessage);
-        console.error(err);
-      } finally {
-        setLoading(false);
-        setListingsLoading(false);
+      } else {
+        console.error('Error fetching leads:', leadsResponse.reason);
+        dataError = true;
       }
+      
+      // Handle Analytics Response
+      if (analyticsResponse.status === 'fulfilled') {
+        if (analyticsResponse.value.data.configured) {
+          setTotalVisitors(analyticsResponse.value.data.totalVisitors);
+        } else {
+          sheetsConfigured = false;
+        }
+      } else {
+        console.error('Error fetching analytics:', analyticsResponse.reason);
+        dataError = true;
+      }
+
+      setIsConfigured(sheetsConfigured);
+      
+      if (dataError && sheetsConfigured) {
+          setError('Could not load some dashboard data. Please check the logs.');
+      }
+      
+      setLoading(false);
+
+      // Handle Listings Response
+      if (listingsResponse.status === 'fulfilled') {
+        setListings(listingsResponse.value.data?.props || []);
+      } else {
+        console.error("Failed to fetch listings for admin dashboard:", listingsResponse.reason);
+        setListings([]);
+        // Do not overwrite other errors, just log it.
+      }
+      setListingsLoading(false);
     };
     fetchDashboardData();
   }, []);
