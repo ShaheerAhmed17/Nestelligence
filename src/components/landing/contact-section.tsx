@@ -12,7 +12,7 @@ export default function ContactSection() {
           Ready to Elevate Your Business?
         </h2>
         <p className="max-w-3xl mx-auto text-lg text-foreground/80 mb-12 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          Connect with us to discover how Nestelligent AI can transform your real estate ventures. Book a free consultation and see the future of real estate, today.
+          Connect with us to discover how Nestelligence can transform your real estate ventures. Book a free consultation and see the future of real estate, today.
         </p>
         <div className="flex flex-col md:flex-row gap-8 justify-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
           <a href="https://wa.me/923111283440" target="_blank" rel="noopener noreferrer" className="block">

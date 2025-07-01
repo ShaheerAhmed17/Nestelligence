@@ -13,7 +13,7 @@ export default function Footer() {
           </p>
         </div>
         <p className="text-sm text-foreground/60 font-body">
-          &copy; {currentYear} Nestelligent AI. All rights reserved.
+          &copy; {currentYear} Nestelligence. All rights reserved.
         </p>
       </div>
     </footer>

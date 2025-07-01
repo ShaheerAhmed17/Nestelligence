@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Nestelligent AI',
+  title: 'Nestelligence',
   description: 'Smarter Real Estate with AI. Leverage cutting-edge technology to automate tasks, accelerate sales, and dominate the luxury market.',
 };
 

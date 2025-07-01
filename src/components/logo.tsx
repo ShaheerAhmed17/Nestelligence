@@ -25,7 +25,7 @@ export const Logo = ({ className }: { className?: string }) => (
       </svg>
     </div>
     <span className="text-xl font-bold font-headline text-foreground group-hover:text-primary transition-colors">
-      Nestelligent AI
+      Nestelligence
     </span>
   </a>
 );
