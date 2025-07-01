@@ -79,21 +79,24 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
+      setListingsLoading(true);
       setError(null);
       
-      const [leadsResponse, analyticsResponse, listingsResponse] = await Promise.allSettled([
+      const results = await Promise.allSettled([
         axios.get<{ leads: Lead[], configured: boolean, error?: string }>('/api/get-leads'),
         axios.get<{ totalVisitors: number, configured: boolean }>('/api/analytics'),
         axios.get('/api/Zillow', { params: { city: 'San Francisco', state: 'CA' } })
       ]);
       
+      const [leadsResponse, analyticsResponse, listingsResponse] = results;
+
       let sheetsConfigured = true;
-      let dataError = false;
+      let dataFetchError = null;
 
       // Handle Leads Response
-      if (leadsResponse.status === 'fulfilled') {
-        if (leadsResponse.value.data.configured) {
-          const cleanedLeads = leadsResponse.value.data.leads.map(lead => ({
+      if (leadsResponse.status === 'fulfilled' && leadsResponse.value.data) {
+        if (leadsResponse.value.data.configured !== false) {
+          const cleanedLeads = (leadsResponse.value.data.leads || []).map(lead => ({
             ...lead,
             Phone: lead.Phone ? String(lead.Phone).replace(/^'/, '') : '',
           }));
@@ -102,38 +105,40 @@ export default function AdminDashboard() {
           sheetsConfigured = false;
         }
       } else {
-        console.error('Error fetching leads:', leadsResponse.reason);
-        dataError = true;
+        console.error('Error fetching leads:', leadsResponse.status === 'rejected' && leadsResponse.reason);
+        dataFetchError = 'Could not load leads. Please check your Google Sheets setup and the server logs.';
       }
       
       // Handle Analytics Response
-      if (analyticsResponse.status === 'fulfilled') {
-        if (analyticsResponse.value.data.configured) {
+      if (analyticsResponse.status === 'fulfilled' && analyticsResponse.value.data) {
+        if (analyticsResponse.value.data.configured !== false) {
           setTotalVisitors(analyticsResponse.value.data.totalVisitors);
         } else {
           sheetsConfigured = false;
         }
       } else {
-        console.error('Error fetching analytics:', analyticsResponse.reason);
-        dataError = true;
+        console.error('Error fetching analytics:', analyticsResponse.status === 'rejected' && analyticsResponse.reason);
+        if (!dataFetchError) {
+          dataFetchError = 'Could not load analytics. Please check your Google Sheets setup and the server logs.';
+        }
       }
 
       setIsConfigured(sheetsConfigured);
       
-      if (dataError && sheetsConfigured) {
-          setError('Could not load some dashboard data. Please check the logs.');
+      if (dataFetchError && sheetsConfigured) {
+          setError(dataFetchError);
       }
       
-      setLoading(false);
-
       // Handle Listings Response
-      if (listingsResponse.status === 'fulfilled') {
+      if (listingsResponse.status === 'fulfilled' && listingsResponse.value.data) {
         setListings(listingsResponse.value.data?.props || []);
       } else {
-        console.error("Failed to fetch listings for admin dashboard:", listingsResponse.reason);
+        console.error("Failed to fetch listings for admin dashboard:", listingsResponse.status === 'rejected' && listingsResponse.reason);
         setListings([]);
-        // Do not overwrite other errors, just log it.
+        // Non-critical, so we don't set the main error state
       }
+
+      setLoading(false);
       setListingsLoading(false);
     };
     fetchDashboardData();
