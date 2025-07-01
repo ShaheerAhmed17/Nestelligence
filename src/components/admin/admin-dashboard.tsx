@@ -22,7 +22,6 @@ import {
 } from 'recharts';
 import { format, parseISO, startOfDay } from 'date-fns';
 import { Loader2, AlertTriangle, Users, SheetIcon, Activity } from 'lucide-react';
-import Link from 'next/link';
 
 interface Lead {
   Timestamp: string;
@@ -32,17 +31,6 @@ interface Lead {
   Location: string;
   Budget: string;
   PropertyType: string;
-}
-
-interface Listing {
-  id: string;
-  address: string;
-  price: string;
-  bedrooms: number;
-  bathrooms: number;
-  brokerName?: string;
-  city: string;
-  state: string;
 }
 
 // Function to process lead data for the chart
@@ -71,26 +59,22 @@ const processLeadDataForChart = (leads: Lead[]) => {
 
 export default function AdminDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [listings, setListings] = useState<Listing[]>([]);
   const [totalVisitors, setTotalVisitors] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [listingsLoading, setListingsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConfigured, setIsConfigured] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
-      setListingsLoading(true);
       setError(null);
       
       const results = await Promise.allSettled([
         axios.get<{ leads: Lead[], configured: boolean, error?: string }>('/api/get-leads'),
         axios.get<{ totalVisitors: number, configured: boolean }>('/api/analytics'),
-        axios.get('/api/realtymole', { params: { city: 'San Francisco', state: 'CA' } })
       ]);
       
-      const [leadsResult, analyticsResult, listingsResult] = results;
+      const [leadsResult, analyticsResult] = results;
 
       let sheetsConfigured = true;
       let dataFetchError: string | null = null;
@@ -131,28 +115,7 @@ export default function AdminDashboard() {
           setError(dataFetchError);
       }
       
-      // Handle Listings Response
-      if (listingsResult.status === 'fulfilled') {
-        const city = 'San Francisco';
-        const state = 'CA';
-        const mappedListings = (listingsResult.value.data || []).map((p: any) => ({
-            id: p.id,
-            address: p.formattedAddress,
-            price: p.price ? `$${p.price.toLocaleString()}` : 'N/A',
-            bedrooms: p.bedrooms,
-            bathrooms: p.bathrooms,
-            brokerName: 'N/A', // Not available from RealtyMole
-            city: p.city || city,
-            state: p.state || state
-        })).filter((p: any) => p.id);
-        setListings(mappedListings);
-      } else {
-        console.error("Failed to fetch listings for admin dashboard:", listingsResult.reason);
-        setListings([]);
-      }
-
       setLoading(false);
-      setListingsLoading(false);
     };
     fetchDashboardData();
   }, []);
@@ -299,59 +262,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-       {/* Property Listings Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Featured Listings</CardTitle>
-          <CardDescription>A selection of current property listings (Default: San Francisco, CA).</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Beds</TableHead>
-                  <TableHead>Baths</TableHead>
-                  <TableHead>Broker (Contact)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {listingsLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      <Loader2 className="h-6 w-6 animate-spin inline-block mr-2" /> Loading listings...
-                    </TableCell>
-                  </TableRow>
-                ) : listings.length > 0 ? (
-                  listings.map((listing) => (
-                     <TableRow key={listing.id}>
-                        <TableCell className="font-medium">
-                          <Link href={`/listings/${listing.id}?city=${encodeURIComponent(listing.city)}&state=${listing.state}`} target="_blank" className="hover:underline text-primary">
-                            {listing.address}
-                          </Link>
-                        </TableCell>
-                        <TableCell>{listing.price}</TableCell>
-                        <TableCell>{listing.bedrooms || 'N/A'}</TableCell>
-                        <TableCell>{listing.bathrooms ? Math.round(listing.bathrooms) : 'N/A'}</TableCell>
-                        <TableCell>{listing.brokerName || 'N/A'}</TableCell>
-                      </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      No listings could be loaded.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-
+      
        {/* Full leads table */}
       <Card>
         <CardHeader>
