@@ -4,7 +4,6 @@ import ServicesSection from '@/components/landing/services-section';
 import PricingSection from '@/components/landing/pricing-section';
 import MarketInsightsSection from '@/components/landing/market-insights-section';
 import BayutListingsSection from '@/components/landing/bayut-listings-section';
-import ZillowListings from '@/components/landing/zillow-listings-section';
 
 import ContactSection from '@/components/landing/contact-section';
 import Footer from '@/components/landing/footer';
@@ -19,7 +18,6 @@ export default function HomePage() {
         <PricingSection />
         <MarketInsightsSection />
         <BayutListingsSection />
-        <ZillowListings />
         <ContactSection />
       </main>
       <Footer />
