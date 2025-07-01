@@ -70,21 +70,19 @@ export default function ZillowListings() {
                 </Card>
               ))
             ) : listings.length > 0 ? listings.map((listing: Listing) => (
-              <Link href={`/listings/${listing.zpid}`} key={listing.zpid} legacyBehavior={false}>
-                <a className="block h-full">
-                    <Card className="bg-card rounded-lg overflow-hidden border border-white/10 hover:shadow-xl hover:border-primary transition-all duration-300 h-full flex flex-col">
-                    <img src={listing.imgSrc} alt={listing.address} className="h-48 w-full object-cover" data-ai-hint="modern house" />
-                    <CardContent className="p-4 flex flex-col flex-grow">
-                        <h3 className="font-semibold truncate flex-grow">{listing.address}</h3>
-                        <p className="text-primary font-bold mt-1">{listing.price}</p>
-                        <p className="text-sm mt-1">
-                        {listing.bedrooms && `🛏 ${listing.bedrooms} Bed`}
-                        {listing.bedrooms && listing.bathrooms && ' · '}
-                        {listing.bathrooms && `🛁 ${Math.round(listing.bathrooms)} Bath`}
-                        </p>
-                    </CardContent>
-                    </Card>
-                </a>
+              <Link href={`/listings/${listing.zpid}`} key={listing.zpid} className="block h-full">
+                <Card className="bg-card rounded-lg overflow-hidden border border-white/10 hover:shadow-xl hover:border-primary transition-all duration-300 h-full flex flex-col">
+                <img src={listing.imgSrc} alt={listing.address} className="h-48 w-full object-cover" data-ai-hint="modern house" />
+                <CardContent className="p-4 flex flex-col flex-grow">
+                    <h3 className="font-semibold truncate flex-grow">{listing.address}</h3>
+                    <p className="text-primary font-bold mt-1">{listing.price}</p>
+                    <p className="text-sm mt-1">
+                    {listing.bedrooms && `🛏 ${listing.bedrooms} Bed`}
+                    {listing.bedrooms && listing.bathrooms && ' · '}
+                    {listing.bathrooms && `🛁 ${Math.round(listing.bathrooms)} Bath`}
+                    </p>
+                </CardContent>
+                </Card>
               </Link>
             )) : <p className="text-center col-span-full py-8">No listings found for the selected area.</p>}
         </div>

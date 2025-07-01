@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
+import Link from 'next/link';
 
 export default function Header() {
   return (
@@ -8,7 +9,7 @@ export default function Header() {
         <Logo />
         <nav className="hidden md:flex items-center gap-4">
           <Button variant="link" asChild className="text-foreground hover:text-primary">
-            <a href="/market-analysis">Market Analysis</a>
+            <Link href="/market-analysis">Market Analysis</Link>
           </Button>
           <Button variant="link" asChild className="text-foreground hover:text-primary">
             <a href="#pricing">Pricing</a>

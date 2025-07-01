@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export const Logo = ({ className }: { className?: string }) => (
-  <a href="/" className={cn("flex items-center space-x-3 group", className)}>
+  <Link href="/" className={cn("flex items-center space-x-3 group", className)}>
     <div className="bg-primary/20 group-hover:bg-primary/30 transition-colors p-2 rounded-md">
       <svg
         width="24"
@@ -22,5 +23,5 @@ export const Logo = ({ className }: { className?: string }) => (
     <span className="text-xl font-bold font-headline text-foreground group-hover:text-primary transition-colors">
       Nestelligence
     </span>
-  </a>
+  </Link>
 );
