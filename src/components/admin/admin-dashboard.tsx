@@ -35,12 +35,14 @@ interface Lead {
 }
 
 interface Listing {
-  zpid: string;
+  id: string;
   address: string;
   price: string;
   bedrooms: number;
   bathrooms: number;
   brokerName?: string;
+  city: string;
+  state: string;
 }
 
 // Function to process lead data for the chart
@@ -85,7 +87,7 @@ export default function AdminDashboard() {
       const results = await Promise.allSettled([
         axios.get<{ leads: Lead[], configured: boolean, error?: string }>('/api/get-leads'),
         axios.get<{ totalVisitors: number, configured: boolean }>('/api/analytics'),
-        axios.get('/api/Zillow', { params: { city: 'San Francisco', state: 'CA' } })
+        axios.get('/api/realtymole', { params: { city: 'San Francisco', state: 'CA' } })
       ]);
       
       const [leadsResult, analyticsResult, listingsResult] = results;
@@ -131,7 +133,19 @@ export default function AdminDashboard() {
       
       // Handle Listings Response
       if (listingsResult.status === 'fulfilled') {
-        setListings(listingsResult.value.data?.props || []);
+        const city = 'San Francisco';
+        const state = 'CA';
+        const mappedListings = (listingsResult.value.data || []).map((p: any) => ({
+            id: p.id,
+            address: p.formattedAddress,
+            price: p.price ? `$${p.price.toLocaleString()}` : 'N/A',
+            bedrooms: p.bedrooms,
+            bathrooms: p.bathrooms,
+            brokerName: 'N/A', // Not available from RealtyMole
+            city: p.city || city,
+            state: p.state || state
+        })).filter((p: any) => p.id);
+        setListings(mappedListings);
       } else {
         console.error("Failed to fetch listings for admin dashboard:", listingsResult.reason);
         setListings([]);
@@ -289,7 +303,7 @@ export default function AdminDashboard() {
       <Card>
         <CardHeader>
           <CardTitle>Featured Listings</CardTitle>
-          <CardDescription>A selection of current property listings from Zillow (Default: San Francisco, CA).</CardDescription>
+          <CardDescription>A selection of current property listings (Default: San Francisco, CA).</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -312,14 +326,14 @@ export default function AdminDashboard() {
                   </TableRow>
                 ) : listings.length > 0 ? (
                   listings.map((listing) => (
-                     <TableRow key={listing.zpid}>
+                     <TableRow key={listing.id}>
                         <TableCell className="font-medium">
-                          <Link href={`/listings/${listing.zpid}`} target="_blank" className="hover:underline text-primary">
+                          <Link href={`/listings/${listing.id}?city=${encodeURIComponent(listing.city)}&state=${listing.state}`} target="_blank" className="hover:underline text-primary">
                             {listing.address}
                           </Link>
                         </TableCell>
                         <TableCell>{listing.price}</TableCell>
-                        <TableCell>{listing.bedrooms}</TableCell>
+                        <TableCell>{listing.bedrooms || 'N/A'}</TableCell>
                         <TableCell>{listing.bathrooms ? Math.round(listing.bathrooms) : 'N/A'}</TableCell>
                         <TableCell>{listing.brokerName || 'N/A'}</TableCell>
                       </TableRow>

@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
 interface Listing {
-  zpid: string;
+  id: string; // Switched from zpid to RealtyMole's id
   address: string;
   price: string;
   bedrooms: number;
@@ -21,24 +21,35 @@ export default function ZillowListings() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [city, state] = location.split(',');
+
   useEffect(() => {
     const fetchListings = async () => {
       setLoading(true);
-      const [city, state] = location.split(',');
       try {
-        const response = await axios.get('/api/Zillow', { params: { city, state } });
-        // The API returns an object with a `props` array, let's limit to 6 for the homepage
-        setListings(response.data?.props?.slice(0, 6) || []);
+        const response = await axios.get('/api/realtymole', { params: { city, state } });
+        const mappedListings = (response.data || []).map((p: any) => ({
+          id: p.id,
+          address: p.formattedAddress,
+          price: p.price ? `$${p.price.toLocaleString()}` : 'Price not available',
+          bedrooms: p.bedrooms,
+          bathrooms: p.bathrooms,
+          imgSrc: p.photos?.[0] || `https://placehold.co/600x400.png`,
+        })).filter((p: any) => p.id); // Ensure property has an ID
+        
+        setListings(mappedListings.slice(0, 6));
       } catch (error) {
-        console.error("Failed to fetch Zillow listings:", error);
+        console.error("Failed to fetch RealtyMole listings:", error);
         setListings([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchListings();
-  }, [location]);
+    if (city && state) {
+      fetchListings();
+    }
+  }, [location, city, state]);
 
   return (
     <section className="py-20 bg-background text-white" id="zillow-listings">
@@ -70,16 +81,16 @@ export default function ZillowListings() {
                 </Card>
               ))
             ) : listings.length > 0 ? listings.map((listing: Listing) => (
-              <Link href={`/listings/${listing.zpid}`} key={listing.zpid} className="block h-full">
+              <Link href={`/listings/${listing.id}?city=${encodeURIComponent(city)}&state=${state}`} key={listing.id} className="block h-full">
                 <Card className="bg-card rounded-lg overflow-hidden border border-white/10 hover:shadow-xl hover:border-primary transition-all duration-300 h-full flex flex-col">
                 <img src={listing.imgSrc} alt={listing.address} className="h-48 w-full object-cover" data-ai-hint="modern house" />
                 <CardContent className="p-4 flex flex-col flex-grow">
                     <h3 className="font-semibold truncate flex-grow">{listing.address}</h3>
                     <p className="text-primary font-bold mt-1">{listing.price}</p>
                     <p className="text-sm mt-1">
-                    {listing.bedrooms && `🛏 ${listing.bedrooms} Bed`}
-                    {listing.bedrooms && listing.bathrooms && ' · '}
-                    {listing.bathrooms && `🛁 ${Math.round(listing.bathrooms)} Bath`}
+                      {listing.bedrooms ? `🛏 ${listing.bedrooms} Bed` : ''}
+                      {listing.bedrooms && listing.bathrooms ? ' · ' : ''}
+                      {listing.bathrooms ? `🛁 ${Math.round(listing.bathrooms)} Bath` : ''}
                     </p>
                 </CardContent>
                 </Card>
