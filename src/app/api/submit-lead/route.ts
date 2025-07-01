@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { automatedLeadNurturing } from '@/ai/flows/automated-lead-nurturing';
+import twilio from 'twilio';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -10,8 +11,7 @@ export async function POST(req: NextRequest) {
   // Log the received lead data first
   console.log('Received lead submission:', body);
 
-  // --- AI-Powered Follow-Up Generation ---
-  // This section calls the Genkit flow to generate personalized messages.
+  // --- AI-Powered Follow-Up Generation & SMS Sending ---
   try {
     console.log('Generating AI-powered follow-up messages...');
     const followUpContent = await automatedLeadNurturing({
@@ -30,6 +30,29 @@ export async function POST(req: NextRequest) {
     console.log('--- Generated SMS ---');
     console.log(followUpContent.textMessage);
     console.log('-----------------------');
+
+    // --- Twilio SMS Integration ---
+    // This section attempts to send the generated text message via Twilio.
+    // To make this work, you need to provide your Twilio credentials in your environment variables:
+    // TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
+    if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+        console.log('Attempting to send SMS via Twilio...');
+        try {
+            const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+            await client.messages.create({
+                body: followUpContent.textMessage,
+                from: process.env.TWILIO_PHONE_NUMBER,
+                to: body.phone, // Ensure this is a valid E.164 format phone number (e.g., +14155238886)
+            });
+            console.log('Successfully sent SMS via Twilio.');
+        } catch (smsError) {
+            console.error('!!! Twilio SMS Sending Error !!!');
+            console.error('Could not send SMS. Please check your Twilio credentials and ensure the phone number is in E.164 format.');
+            console.error('Error Details:', smsError);
+        }
+    } else {
+        console.log('Twilio credentials not set. Skipping SMS integration.');
+    }
 
   } catch (error) {
     // Log any errors from the AI flow but don't block the user response.
