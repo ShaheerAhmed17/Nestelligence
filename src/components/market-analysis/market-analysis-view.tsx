@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
 import { BarChart, CartesianGrid, XAxis, YAxis, Bar } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,13 +18,6 @@ const ALL_AREAS = [
     { city: 'Seattle', state: 'WA' },
 ];
 
-interface Property {
-  price: number;
-  bedrooms: number;
-  bathrooms: number;
-  formattedAddress: string;
-}
-
 interface ComparisonData {
   name: string;
   city: string;
@@ -36,37 +28,50 @@ interface ComparisonData {
   propertyCount: number;
 }
 
+const mockMarketData: {[key: string]: Omit<ComparisonData, 'name' | 'city' | 'state'>} = {
+  'Los Angeles,CA': { avgPrice: 850000, avgBeds: 3.2, avgBaths: 2.5, propertyCount: 1200 },
+  'San Francisco,CA': { avgPrice: 1400000, avgBeds: 2.8, avgBaths: 2.1, propertyCount: 800 },
+  'New York,NY': { avgPrice: 750000, avgBeds: 2.1, avgBaths: 1.8, propertyCount: 2500 },
+  'Miami,FL': { avgPrice: 550000, avgBeds: 3.5, avgBaths: 2.8, propertyCount: 1500 },
+  'Chicago,IL': { avgPrice: 350000, avgBeds: 2.9, avgBaths: 2.2, propertyCount: 1800 },
+  'Houston,TX': { avgPrice: 320000, avgBeds: 3.8, avgBaths: 3.1, propertyCount: 2200 },
+  'Seattle,WA': { avgPrice: 780000, avgBeds: 3.0, avgBaths: 2.3, propertyCount: 950 },
+};
+
+
 export default function MarketAnalysisView() {
   const [comparisonData, setComparisonData] = useState<ComparisonData[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedAreas, setSelectedAreas] = useState<{city: string, state: string}[]>([ALL_AREAS[0], ALL_AREAS[2]]);
   
   const fetchMarketData = async (area: {city: string, state: string}) => {
-    try {
-      const response = await axios.get('/api/realtymole', { params: { city: area.city, state: area.state } });
-      const properties: Property[] = response.data;
-      if (!properties || properties.length === 0) return null;
+    return new Promise<ComparisonData | null>((resolve) => {
+      // Simulate network delay
+      setTimeout(() => {
+        const key = `${area.city},${area.state}`;
+        const data = mockMarketData[key];
 
-      const validProperties = properties.filter(p => p.price > 0);
-      if (validProperties.length === 0) return null;
-
-      const total_price = validProperties.reduce((acc, p) => acc + p.price, 0);
-      const total_beds = validProperties.reduce((acc, p) => acc + (p.bedrooms || 0), 0);
-      const total_baths = validProperties.reduce((acc, p) => acc + (p.bathrooms || 0), 0);
-      
-      return {
-        name: `${area.city}, ${area.state}`,
-        city: area.city,
-        state: area.state,
-        avgPrice: total_price / validProperties.length,
-        avgBeds: total_beds / validProperties.length,
-        avgBaths: total_baths / validProperties.length,
-        propertyCount: validProperties.length
-      };
-    } catch (error) {
-      console.error(`Failed to fetch data for ${area.city}`, error);
-      return null;
-    }
+        if (data) {
+          resolve({
+            name: `${area.city}, ${area.state}`,
+            city: area.city,
+            state: area.state,
+            ...data,
+          });
+        } else {
+          // Return zeroed data if city not in mock
+          resolve({
+            name: `${area.city}, ${area.state}`,
+            city: area.city,
+            state: area.state,
+            avgPrice: 0,
+            avgBeds: 0,
+            avgBaths: 0,
+            propertyCount: 0
+          });
+        }
+      }, 300);
+    });
   };
 
   useEffect(() => {
@@ -129,7 +134,7 @@ export default function MarketAnalysisView() {
             </div>
             <Select onValueChange={(value) => {
                 const area = ALL_AREAS.find(a => `${a.city},${a.state}` === value);
-                if (area && !selectedAreas.find(sa => sa.city === area.city && sa.state === area.state)) {
+                if (area && !selectedAreas.find(sa => sa.city === area.city && sa.state === a.state)) {
                     setSelectedAreas([...selectedAreas, area]);
                 }
             }}>
