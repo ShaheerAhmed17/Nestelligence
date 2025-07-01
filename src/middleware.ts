@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(req: NextRequest) {
-  // We only want to protect the /admin route
-  if (!req.nextUrl.pathname.startsWith('/admin')) {
-    return NextResponse.next()
-  }
-
   const basicAuth = req.headers.get('authorization')
 
   if (basicAuth) {
     const authValue = basicAuth.split(' ')[1]
-    // The value is base64 encoded
+    // atob is supported in the Edge runtime
     const [user, pwd] = atob(authValue).split(':')
 
-    // Get the expected credentials from environment variables
-    // with fallbacks for development
-    const expectedUser = process.env.ADMIN_USERNAME ?? 'admin'
-    const expectedPassword = process.env.ADMIN_PASSWORD ?? 'password'
+    const expectedUser = process.env.ADMIN_USERNAME
+    const expectedPassword = process.env.ADMIN_PASSWORD
 
     if (user === expectedUser && pwd === expectedPassword) {
       return NextResponse.next()
@@ -33,7 +26,7 @@ export function middleware(req: NextRequest) {
   return response
 }
 
-// Ensure the middleware runs on the /admin path
+// Ensure the middleware runs on the /admin path and all sub-paths
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin', '/admin/:path*'],
 }
