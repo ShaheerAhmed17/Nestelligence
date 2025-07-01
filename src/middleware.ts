@@ -33,7 +33,8 @@ export function middleware(req: NextRequest) {
   const response = new NextResponse('Authentication required', {
     status: 401,
     headers: {
-      'WWW-Authenticate': 'Basic realm="Secure Area"',
+      // By using a unique realm each time, we force the browser to re-prompt.
+      'WWW-Authenticate': `Basic realm="Secure Area - ${Date.now()}"`,
     },
   })
   return response
