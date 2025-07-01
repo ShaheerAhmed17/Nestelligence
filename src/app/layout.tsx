@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
-import ChatbotEmbed from '@/components/ChatbotEmbed';
 import VisitorTracker from '@/components/VisitorTracker';
 import './globals.css';
 
@@ -33,7 +32,6 @@ export default function RootLayout({
         <VisitorTracker />
         {children}
         <Toaster />
-        <ChatbotEmbed /> {/* ✅ NestBot appears on all pages */}
       </body>
     </html>
   );
