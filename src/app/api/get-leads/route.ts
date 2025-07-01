@@ -5,8 +5,8 @@ import { JWT } from 'google-auth-library';
 export async function GET() {
   // Check for required environment variables
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL || !process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || !process.env.GOOGLE_SHEET_ID) {
-    console.log('Google Sheets credentials not set. Skipping Sheets integration.');
-    return NextResponse.json({ error: 'Google Sheets credentials not configured on the server.' }, { status: 500 });
+    console.log('Google Sheets credentials not set. Returning empty list of leads.');
+    return NextResponse.json([]);
   }
 
   try {
