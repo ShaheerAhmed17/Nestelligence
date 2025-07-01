@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
-import ChatbotEmbed from '@/components/ChatbotEmbed'; // ✅ Import NestBot embed
+import ChatbotEmbed from '@/components/ChatbotEmbed';
+import VisitorTracker from '@/components/VisitorTracker';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
+        <VisitorTracker />
         {children}
         <Toaster />
         <ChatbotEmbed /> {/* ✅ NestBot appears on all pages */}

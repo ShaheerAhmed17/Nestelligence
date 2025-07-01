@@ -21,7 +21,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format, parseISO, startOfDay } from 'date-fns';
-import { Loader2, AlertTriangle, Users, SheetIcon } from 'lucide-react';
+import { Loader2, AlertTriangle, Users, SheetIcon, Activity } from 'lucide-react';
 
 interface Lead {
   Timestamp: string;
@@ -59,40 +59,55 @@ const processLeadDataForChart = (leads: Lead[]) => {
 
 export default function AdminDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [totalVisitors, setTotalVisitors] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConfigured, setIsConfigured] = useState(true);
 
   useEffect(() => {
-    const fetchLeads = async () => {
+    const fetchDashboardData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get<{ leads: Lead[], configured: boolean, error?: string }>('/api/get-leads');
+        const [leadsResponse, analyticsResponse] = await Promise.all([
+          axios.get<{ leads: Lead[], configured: boolean, error?: string }>('/api/get-leads'),
+          axios.get<{ totalVisitors: number, configured: boolean }>('/api/analytics')
+        ]);
+        
+        const configured = leadsResponse.data.configured && analyticsResponse.data.configured;
+        setIsConfigured(configured);
 
-        if (response.data.configured === false) {
-          setIsConfigured(false);
-          setLeads([]);
-        } else {
-          setIsConfigured(true);
-          const cleanedLeads = response.data.leads.map(lead => ({
+        if (configured) {
+          const cleanedLeads = leadsResponse.data.leads.map(lead => ({
             ...lead,
             Phone: lead.Phone ? String(lead.Phone).replace(/^'/, '') : '',
           }));
           setLeads(cleanedLeads);
+          setTotalVisitors(analyticsResponse.data.totalVisitors);
+        } else {
+          setLeads([]);
+          setTotalVisitors(0);
         }
+
       } catch (err: any) {
-        const errorMessage = err.response?.data?.error || 'An unknown error occurred while fetching leads. Check the server logs for more details.';
+        const errorMessage = err.response?.data?.error || 'An unknown error occurred while fetching dashboard data. Check the server logs.';
         setError(errorMessage);
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchLeads();
+    fetchDashboardData();
   }, []);
 
   const chartData = useMemo(() => processLeadDataForChart(leads), [leads]);
+  
+  const conversionRate = useMemo(() => {
+    if (totalVisitors === null || totalVisitors === 0 || leads.length === 0) {
+      return 0;
+    }
+    return (leads.length / totalVisitors) * 100;
+  }, [leads, totalVisitors]);
 
   if (loading) {
     return (
@@ -125,13 +140,13 @@ export default function AdminDashboard() {
             <div>
               <CardTitle className="text-yellow-400">Google Sheets Integration Needed</CardTitle>
               <CardDescription className="text-yellow-500/80 mt-2">
-                Your dashboard is working, but it can't display leads because it's not connected to Google Sheets.
+                Your dashboard is working, but it can't display leads or analytics because it's not connected to Google Sheets.
               </CardDescription>
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-yellow-400/90 space-y-4">
-              <p>To see your leads, you need to:</p>
+              <p>To see your leads and analytics, you need to:</p>
               <ol className="list-decimal list-inside space-y-2 pl-2">
                 <li>
                   <strong>Create a Google Service Account:</strong> Go to the Google Cloud Console, create a service account for your project, and download its JSON key file.
@@ -165,6 +180,16 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="text-4xl font-bold">{leads.length}</div>
             <p className="text-xs text-muted-foreground">All captured leads</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold">{conversionRate.toFixed(2)}%</div>
+            <p className="text-xs text-muted-foreground">Based on {totalVisitors ?? 'N/A'} visitors</p>
           </CardContent>
         </Card>
       </div>
