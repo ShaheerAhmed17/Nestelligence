@@ -12,9 +12,10 @@ export default function Footer() {
             Automate, Engage, Close - with Nestelligence.
           </p>
         </div>
-        <p className="text-sm text-gray-400 font-body">
-          &copy; {currentYear} Nestelligence. All rights reserved.
-        </p>
+        <div className="flex items-center gap-x-4 text-sm text-gray-400 font-body">
+          <p>&copy; {currentYear} Nestelligence. All rights reserved.</p>
+          <a href="/admin" className="hover:text-primary transition-colors">Admin</a>
+        </div>
       </div>
     </footer>
   );
