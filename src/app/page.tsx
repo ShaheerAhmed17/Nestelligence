@@ -1,6 +1,7 @@
 import Header from '@/components/landing/header';
 import HeroSection from '@/components/landing/hero-section';
 import ServicesSection from '@/components/landing/services-section';
+import MarketInsightsSection from '@/components/landing/market-insights-section'; // ✅ Add this
 import ContactSection from '@/components/landing/contact-section';
 import Footer from '@/components/landing/footer';
 
@@ -11,6 +12,7 @@ export default function HomePage() {
       <main className="flex-grow">
         <HeroSection />
         <ServicesSection />
+        <MarketInsightsSection /> {/* ✅ Show insights here */}
         <ContactSection />
       </main>
       <Footer />
