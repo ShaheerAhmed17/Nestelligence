@@ -22,6 +22,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
+import axios from 'axios';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -34,6 +37,7 @@ const formSchema = z.object({
 
 export default function LeadCaptureForm() {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,14 +50,26 @@ export default function LeadCaptureForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('Lead Captured:', values);
-    // Here you would typically send the data to your backend (e.g., Supabase, Google Sheets via API)
-    toast({
-      title: '✅ Consultation Requested!',
-      description: "We've received your details and will be in touch shortly.",
-    });
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
+    try {
+      await axios.post('/api/submit-lead', values);
+
+      toast({
+        title: '✅ Consultation Requested!',
+        description: "We've received your details and will be in touch shortly.",
+      });
+      form.reset();
+    } catch (error) {
+      console.error('Submission Error:', error);
+      toast({
+        title: '❌ Submission Failed',
+        description: 'There was a problem submitting your request. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -97,7 +113,7 @@ export default function LeadCaptureForm() {
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="+1 (555) 123-4567" {...field} />
+                      <Input placeholder="+92 311 1283440" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -160,8 +176,16 @@ export default function LeadCaptureForm() {
               type="submit"
               className="w-full bg-primary text-primary-foreground hover:bg-accent shadow-lg"
               size="lg"
+              disabled={isSubmitting}
             >
-              Book a Free Consultation
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                'Book a Free Consultation'
+              )}
             </Button>
           </form>
         </Form>
