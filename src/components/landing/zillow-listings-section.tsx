@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 
 const mockListings = [
     {
@@ -87,7 +86,7 @@ export default function ZillowListings() {
         <div className="grid md:grid-cols-3 gap-6">
             {filteredListings.length > 0 ? filteredListings.map((listing: any, index: number) => (
               <div key={index} className="bg-card rounded-lg overflow-hidden border border-white/10 hover:shadow-xl transition-shadow duration-300">
-                <Image src={listing.imgSrc} alt={listing.address} width={600} height={400} className="h-48 w-full object-cover" data-ai-hint={listing['data-ai-hint']} />
+                <img src={listing.imgSrc} alt={listing.address} className="h-48 w-full object-cover" data-ai-hint={listing['data-ai-hint']} />
                 <div className="p-4">
                   <h3 className="font-semibold">{listing.address}</h3>
                   <p className="text-primary font-bold">{listing.price}</p>
