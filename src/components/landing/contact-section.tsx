@@ -7,7 +7,7 @@ export default function ContactSection() {
   return (
     <section id="contact" className="py-20 md:py-32 bg-black">
       <div className="container mx-auto px-4 text-center">
-        <h2 className="font-headline text-4xl md:text-5xl font-bold text-gold mb-4 animate-fade-in-up">
+        <h2 className="font-headline text-4xl md:text-5xl font-bold text-primary mb-4 animate-fade-in-up">
           Ready to Elevate Your Business?
         </h2>
         <p
@@ -26,16 +26,16 @@ export default function ContactSection() {
             rel="noopener noreferrer"
             className="block"
           >
-            <Card className="h-full bg-neutral-900 hover:bg-black transition-colors border-2 border-gold/20 hover:border-gold flex flex-col items-center justify-center p-8 text-center">
-              <MessageCircle className="w-16 h-16 text-gold mb-4" />
-              <h3 className="text-2xl font-bold font-headline text-gold">WhatsApp</h3>
+            <Card className="h-full bg-neutral-900 hover:bg-black transition-colors border-2 border-primary/20 hover:border-primary flex flex-col items-center justify-center p-8 text-center">
+              <MessageCircle className="w-16 h-16 text-primary mb-4" />
+              <h3 className="text-2xl font-bold font-headline text-primary">WhatsApp</h3>
               <p className="text-gray-400 mt-2">Chat with us directly</p>
             </Card>
           </a>
           <a href="mailto:nestelligence@gmail.com" className="block">
-            <Card className="h-full bg-neutral-900 hover:bg-black transition-colors border-2 border-gold/20 hover:border-gold flex flex-col items-center justify-center p-8 text-center">
-              <Mail className="w-16 h-16 text-gold mb-4" />
-              <h3 className="text-2xl font-bold font-headline text-gold">Email Us</h3>
+            <Card className="h-full bg-neutral-900 hover:bg-black transition-colors border-2 border-primary/20 hover:border-primary flex flex-col items-center justify-center p-8 text-center">
+              <Mail className="w-16 h-16 text-primary mb-4" />
+              <h3 className="text-2xl font-bold font-headline text-primary">Email Us</h3>
               <p className="text-gray-400 mt-2">Send us your inquiry</p>
             </Card>
           </a>

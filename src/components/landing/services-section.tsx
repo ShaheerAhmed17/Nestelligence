@@ -40,7 +40,7 @@ export default function ServicesSection() {
     <section id="services" className="py-20 md:py-32 bg-black">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="font-headline text-4xl md:text-5xl font-bold text-gold tracking-tight animate-fade-in-up">
+          <h2 className="font-headline text-4xl md:text-5xl font-bold text-primary tracking-tight animate-fade-in-up">
             A New Paradigm in Real Estate
           </h2>
           <p
@@ -57,12 +57,12 @@ export default function ServicesSection() {
               className="animate-fade-in-up"
               style={{ animationDelay: `${0.4 + index * 0.2}s` }}
             >
-              <Card className="h-full flex flex-col bg-neutral-900 border-gold/10 hover:border-gold transition-all duration-300 hover:shadow-2xl hover:shadow-gold/10 transform hover:-translate-y-2">
+              <Card className="h-full flex flex-col bg-neutral-900 border-primary/10 hover:border-primary transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 transform hover:-translate-y-2">
                 <CardHeader className="items-center text-center">
-                  <div className="p-4 bg-gold/10 rounded-full mb-4">
-                    <service.icon className="w-8 h-8 text-gold" />
+                  <div className="p-4 bg-primary/10 rounded-full mb-4">
+                    <service.icon className="w-8 h-8 text-primary" />
                   </div>
-                  <CardTitle className="font-headline text-2xl text-gold">
+                  <CardTitle className="font-headline text-2xl text-primary">
                     {service.title}
                   </CardTitle>
                 </CardHeader>
@@ -74,7 +74,7 @@ export default function ServicesSection() {
                 <CardFooter className="justify-center">
                   <Button
                     variant="outline"
-                    className="border-gold text-gold hover:bg-gold hover:text-black transition-all duration-300 shadow-md shadow-gold/10 hover:shadow-lg hover:shadow-gold/30"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/30"
                   >
                     {service.cta}
                   </Button>

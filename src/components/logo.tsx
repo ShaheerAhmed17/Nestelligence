@@ -11,17 +11,12 @@ export const Logo = ({ className }: { className?: string }) => (
         xmlns="http://www.w3.org/2000/svg"
         className="text-primary group-hover:scale-110 transition-transform"
       >
-        <path
-          d="M12 2L2 7V21H22V7L12 2Z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M15.5 21V15C15.5 13.5947 14.3053 12.0123 13.5 11.5C12.6947 10.9877 11.3053 10.9877 10.5 11.5C9.69474 12.0123 8.5 13.5947 8.5 15V21"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        />
+        <path d="M2.5 20C2.5 18.8954 3.39543 18 4.5 18H19.5C20.6046 18 21.5 18.8954 21.5 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M7 18V11L10 9V18H7Z" fill="currentColor"/>
+        <path d="M10.5 18V6L13.5 4V18H10.5Z" fill="currentColor"/>
+        <path d="M14 18V9L17 7V18H14Z" fill="currentColor"/>
+        <rect x="15" y="10" width="1" height="1.5" fill="hsl(var(--background))" />
+        <rect x="15" y="13" width="1" height="1.5" fill="hsl(var(--background))" />
       </svg>
     </div>
     <span className="text-xl font-bold font-headline text-foreground group-hover:text-primary transition-colors">

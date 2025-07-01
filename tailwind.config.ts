@@ -15,9 +15,6 @@ const config: Config = {
         code: ['monospace'],
       },
       colors: {
-        // Custom Brand Color
-        gold: '#FFD700',
-
         // Existing design system (CSS variable driven)
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
