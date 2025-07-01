@@ -21,40 +21,31 @@ export async function POST(req: NextRequest) {
     // GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL=your_service_account_email@...
     // GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="your_private_key_here"
 
-    // The code below is a template. It is commented out to prevent errors
-    // until you have set up your environment variables.
+    if (process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL && process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY && process.env.GOOGLE_SHEET_ID) {
+        const serviceAccountAuth = new JWT({
+          email: process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
+          key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, '\n'),
+          scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
 
-    /*
-    if (!process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL || !process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || !process.env.GOOGLE_SHEET_ID) {
-        throw new Error("Google Sheets environment variables are not set.");
+        const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
+
+        await doc.loadInfo(); // loads document properties and worksheets
+        const sheet = doc.sheetsByIndex[0]; // or use `doc.sheetsByTitle[title]`
+
+        // Ensure your Google Sheet has headers that match these keys
+        await sheet.addRow({
+          Timestamp: new Date().toISOString(),
+          Name: body.name,
+          Email: body.email,
+          Phone: body.phone,
+          Location: body.location,
+          Budget: body.budget,
+          PropertyType: body.propertyType,
+        });
+    } else {
+        console.log('Google Sheets credentials not set. Logging lead to console instead:', body);
     }
-
-    const serviceAccountAuth = new JWT({
-      email: process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
-      key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    });
-
-    const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
-
-    await doc.loadInfo(); // loads document properties and worksheets
-    const sheet = doc.sheetsByIndex[0]; // or use `doc.sheetsByTitle[title]`
-
-    // Ensure your Google Sheet has headers that match these keys
-    await sheet.addRow({
-      Timestamp: new Date().toISOString(),
-      Name: body.name,
-      Email: body.email,
-      Phone: body.phone,
-      Location: body.location,
-      Budget: body.budget,
-      PropertyType: body.propertyType,
-    });
-    */
-
-    // For now, we'll just log the data to the console.
-    // Remove this line once you uncomment the code above.
-    console.log('Lead submitted to API. To connect to Google Sheets, follow the instructions in src/app/api/submit-lead/route.ts:', body);
 
     return NextResponse.json({ message: 'Lead submitted successfully!' }, { status: 200 });
 
