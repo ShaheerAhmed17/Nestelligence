@@ -1,7 +1,8 @@
 import Header from '@/components/landing/header';
 import HeroSection from '@/components/landing/hero-section';
 import ServicesSection from '@/components/landing/services-section';
-import MarketInsightsSection from '@/components/landing/market-insights-section'; // ✅ Add this
+import MarketInsightsSection from '@/components/landing/market-insights-section';
+import BayutListingsSection from '@/components/landing/bayut-listings-section';
 import ContactSection from '@/components/landing/contact-section';
 import Footer from '@/components/landing/footer';
 
@@ -12,7 +13,8 @@ export default function HomePage() {
       <main className="flex-grow">
         <HeroSection />
         <ServicesSection />
-        <MarketInsightsSection /> {/* ✅ Show insights here */}
+        <MarketInsightsSection /> {/* ✅ Market insights from Realty Mole */}
+        <BayutListingsSection />   {/* ✅ Live listings from Bayut */}
         <ContactSection />
       </main>
       <Footer />

@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const response = await axios.get('https://realty-mole-property-api.p.rapidapi.com/properties', {
       params: {
         city,
-        state: 'CA', // You can make this dynamic later if needed
+        state: 'CA',
         limit: 5,
       },
       headers: {
@@ -23,6 +23,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(response.data);
   } catch (error) {
     console.error('Error fetching from Realty Mole API:', error);
-    return NextResponse.json({ error: 'Failed to fetch market data' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 }
