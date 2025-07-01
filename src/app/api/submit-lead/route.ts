@@ -2,12 +2,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
+import { automatedLeadNurturing } from '@/ai/flows/automated-lead-nurturing';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
   
   // Log the received lead data first
   console.log('Received lead submission:', body);
+
+  // --- AI-Powered Follow-Up Generation ---
+  // This section calls the Genkit flow to generate personalized messages.
+  try {
+    console.log('Generating AI-powered follow-up messages...');
+    const followUpContent = await automatedLeadNurturing({
+      leadName: body.name,
+      leadEmail: body.email,
+      leadPhone: body.phone,
+      propertyOfInterest: `${body.propertyType} in ${body.location}`,
+      lastInteraction: 'Submitted the lead capture form for a free consultation.',
+    });
+    
+    // For demonstration, we're logging the generated messages.
+    // In a real application, you would integrate an email/SMS service here
+    // to send these messages automatically.
+    console.log('--- Generated Email ---');
+    console.log(followUpContent.emailMessage);
+    console.log('--- Generated SMS ---');
+    console.log(followUpContent.textMessage);
+    console.log('-----------------------');
+
+  } catch (error) {
+    // Log any errors from the AI flow but don't block the user response.
+    console.error('!!! AI Follow-Up Generation Error !!!');
+    console.error('Could not generate follow-up messages. Please check the Genkit flow.');
+    console.error('Error Details:', error);
+  }
+
 
   try {
     // --- Google Sheets Integration ---
@@ -37,7 +67,7 @@ export async function POST(req: NextRequest) {
           Timestamp: new Date().toISOString(),
           Name: body.name,
           Email: body.email,
-          Phone: body.phone,
+          Phone: `'${body.phone}'`,
           Location: body.location,
           Budget: body.budget,
           PropertyType: body.propertyType,
