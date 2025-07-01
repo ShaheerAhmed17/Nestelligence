@@ -21,7 +21,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { format, parseISO, startOfDay } from 'date-fns';
-import { Loader2, AlertTriangle, Users } from 'lucide-react';
+import { Loader2, AlertTriangle, Users, SheetIcon } from 'lucide-react';
 
 interface Lead {
   Timestamp: string;
@@ -61,20 +61,29 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isConfigured, setIsConfigured] = useState(true);
 
   useEffect(() => {
     const fetchLeads = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get<Lead[]>('/api/get-leads');
-        const cleanedLeads = response.data.map(lead => ({
-          ...lead,
-          Phone: lead.Phone ? String(lead.Phone).replace(/^'/, '') : '',
-        }));
-        setLeads(cleanedLeads);
-      } catch (err) {
-        setError('Failed to fetch leads. Ensure Google Sheets API is configured correctly and the sheet is public or shared with the service account.');
+        const response = await axios.get<{ leads: Lead[], configured: boolean, error?: string }>('/api/get-leads');
+
+        if (response.data.configured === false) {
+          setIsConfigured(false);
+          setLeads([]);
+        } else {
+          setIsConfigured(true);
+          const cleanedLeads = response.data.leads.map(lead => ({
+            ...lead,
+            Phone: lead.Phone ? String(lead.Phone).replace(/^'/, '') : '',
+          }));
+          setLeads(cleanedLeads);
+        }
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.error || 'An unknown error occurred while fetching leads. Check the server logs for more details.';
+        setError(errorMessage);
         console.error(err);
       } finally {
         setLoading(false);
@@ -104,6 +113,42 @@ export default function AdminDashboard() {
               <CardDescription className="text-destructive/80">{error}</CardDescription>
             </div>
           </CardHeader>
+      </Card>
+    );
+  }
+
+  if (!isConfigured) {
+    return (
+      <Card className="bg-yellow-900/20 border-yellow-600">
+          <CardHeader className="flex flex-row items-start gap-4">
+            <SheetIcon className="w-8 h-8 text-yellow-500 mt-1" />
+            <div>
+              <CardTitle className="text-yellow-400">Google Sheets Integration Needed</CardTitle>
+              <CardDescription className="text-yellow-500/80 mt-2">
+                Your dashboard is working, but it can't display leads because it's not connected to Google Sheets.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-yellow-400/90 space-y-4">
+              <p>To see your leads, you need to:</p>
+              <ol className="list-decimal list-inside space-y-2 pl-2">
+                <li>
+                  <strong>Create a Google Service Account:</strong> Go to the Google Cloud Console, create a service account for your project, and download its JSON key file.
+                </li>
+                <li>
+                  <strong>Share Your Google Sheet:</strong> Open your leads spreadsheet and share it with the service account's email address (found in the JSON key), giving it "Editor" permissions.
+                </li>
+                <li>
+                  <strong>Update Environment Variables:</strong> Add the following to your <code className="bg-yellow-900/50 p-1 rounded font-mono">.env</code> file:
+                </li>
+              </ol>
+              <pre className="bg-black/50 p-4 rounded-md text-xs overflow-x-auto font-mono">
+                {`GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL="your-service-account-email@...iam.gserviceaccount.com"\nGOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\n...your-private-key...\\n-----END PRIVATE KEY-----\\n"\nGOOGLE_SHEET_ID="your-google-sheet-id"`}
+              </pre>
+               <p className="pt-2">After updating the <code className="bg-yellow-900/50 p-1 rounded font-mono">.env</code> file, you'll need to restart the application for the changes to take effect.</p>
+            </div>
+          </CardContent>
       </Card>
     );
   }
@@ -204,17 +249,25 @@ export default function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leads.map((lead) => (
-                  <TableRow key={lead.Timestamp + lead.Email}>
-                    <TableCell>{format(parseISO(lead.Timestamp), 'PPp')}</TableCell>
-                    <TableCell className="font-medium">{lead.Name}</TableCell>
-                    <TableCell>{lead.Email}</TableCell>
-                    <TableCell>{lead.Phone}</TableCell>
-                    <TableCell>{lead.Location}</TableCell>
-                    <TableCell>{lead.Budget}</TableCell>
-                    <TableCell>{lead.PropertyType}</TableCell>
+                {leads.length > 0 ? (
+                  leads.map((lead) => (
+                    <TableRow key={lead.Timestamp + lead.Email}>
+                      <TableCell>{format(parseISO(lead.Timestamp), 'PPp')}</TableCell>
+                      <TableCell className="font-medium">{lead.Name}</TableCell>
+                      <TableCell>{lead.Email}</TableCell>
+                      <TableCell>{lead.Phone}</TableCell>
+                      <TableCell>{lead.Location}</TableCell>
+                      <TableCell>{lead.Budget}</TableCell>
+                      <TableCell>{lead.PropertyType}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      No leads have been submitted yet.
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>

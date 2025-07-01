@@ -5,8 +5,8 @@ import { JWT } from 'google-auth-library';
 export async function GET() {
   // Check for required environment variables
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL || !process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || !process.env.GOOGLE_SHEET_ID) {
-    console.log('Google Sheets credentials not set. Returning empty list of leads.');
-    return NextResponse.json([]);
+    console.log('Google Sheets credentials not set. Indicating misconfiguration.');
+    return NextResponse.json({ configured: false, leads: [] });
   }
 
   try {
@@ -32,12 +32,12 @@ export async function GET() {
     });
 
     // Return in reverse chronological order
-    return NextResponse.json(leads.reverse());
+    return NextResponse.json({ configured: true, leads: leads.reverse() });
 
   } catch (error) {
     console.error('!!! Google Sheets Read Error !!!');
     console.error('Could not read leads from Google Sheets. Please check your credentials and sheet permissions.');
     console.error('Error Details:', error);
-    return NextResponse.json({ error: 'Failed to fetch leads from Google Sheets.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch leads from Google Sheets. Check server logs for details.' }, { status: 500 });
   }
 }
