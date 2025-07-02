@@ -7,9 +7,19 @@ export function middleware(req: NextRequest) {
 
   // If the env vars are not set, deny access. This is a security best practice.
   if (!expectedUser || !expectedPassword) {
-    console.error("ADMIN_USERNAME or ADMIN_PASSWORD is not set in the .env file. Access to /admin is denied.");
-    // We send a generic 500 error to the client to not leak information.
-    return new NextResponse('Internal Server Error', { status: 500 })
+    console.error("ADMIN_USERNAME or ADMIN_PASSWORD is not set in the deployment environment. Access to /admin is denied.");
+    // We send a more helpful error page to the client to explain the configuration issue.
+    const body = `
+      <div style="font-family: sans-serif; padding: 2rem;">
+        <h1>500 - Server Configuration Error</h1>
+        <p>The admin dashboard cannot be accessed because it is not properly configured on the server.</p>
+        <p><strong>Action Required:</strong> If you are the site administrator, please add the <code>ADMIN_USERNAME</code> and <code>ADMIN_PASSWORD</code> environment variables to your deployment provider's settings.</p>
+      </div>
+    `;
+    return new NextResponse(body, {
+      status: 500,
+      headers: { 'Content-Type': 'text/html' },
+    })
   }
 
   if (basicAuth) {
