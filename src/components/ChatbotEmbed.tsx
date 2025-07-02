@@ -7,7 +7,7 @@ export default function ChatbotEmbed() {
       {/* Configures the chatbot to reset on each page load */}
       <Script
         id="chatbase-config"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `window.chatbaseConfig = { chatbotId: "mZD2-2tfSnr43v5AYA6uJ", resetChatOnLoad: true };`,
         }}
