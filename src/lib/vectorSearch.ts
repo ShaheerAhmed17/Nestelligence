@@ -1,4 +1,4 @@
-import fs from "fs";
+import properties from "../../data/properties_emb.json";
 
 function cosineSimilarity(a: number[], b: number[]): number {
     const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
@@ -6,9 +6,6 @@ function cosineSimilarity(a: number[], b: number[]): number {
     const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
     return dotProduct / (magnitudeA * magnitudeB);
 }
-
-
-const properties = JSON.parse(fs.readFileSync("data/properties_emb.json", "utf-8"));
 
 export function searchProperties(queryEmbedding: number[], topK = 3) {
     const results = properties

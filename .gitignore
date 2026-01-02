@@ -1,4 +1,11 @@
-# Logs
+# Next.js
+.next
+out
+
+# env
+.env
+
+# logs
 logs
 *.log
 npm-debug.log*
